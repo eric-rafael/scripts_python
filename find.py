@@ -25,7 +25,7 @@ def encontrar_termo(caminho_da_pasta, termo_pesquisado):
 
 # Função para criar links HTML
 def criar_link(caminho):
-    return f'<a href="#" onclick="copiar_caminho(\'{os.path.dirname(caminho)}\'); return false;">{caminho}</a>'
+    return f'<a href="#" onclick="copiar_caminho(\'{os.path.dirname(caminho)}\'); return false;" style="color: #1ca3ec;">{caminho}</a>'
 
 # Função para copiar o caminho até a pasta do arquivo e mostrar um popup indicando que foi copiado
 def copiar_caminho(caminho):
@@ -40,7 +40,7 @@ if resultados_encontrados:
     print(f"\n\n-------------------------------------\nResultados encontrados para '{termo_pesquisado}':\n-------------------------------------")
     
     # Criar conteúdo HTML com os links
-    conteudo_html = "<html><head><title>Resultados da busca</title><script>function copiar_caminho(caminho) {var temp = document.createElement('input');temp.value = caminho;document.body.appendChild(temp);temp.select();document.execCommand('copy');document.body.removeChild(temp);var popup = document.getElementById('popup');popup.style.display = 'block';setTimeout(function(){popup.style.display = 'none';}, 2000);}</script><style>#popup {display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #f4f4f4; padding: 20px; border: 1px solid #ccc;}</style></head><body>"
+    conteudo_html = "<html><head><title>Resultados da busca</title><style>body {background-color: #1f1f1f;color: #ffffff;font-family: Arial, sans-serif;}#popup {display: none;position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);background-color: #333;color: #ffffff;padding: 20px;border-radius: 5px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);}a {color: #1ca3ec;}</style><script>function copiar_caminho(caminho) {var temp = document.createElement('input');temp.value = caminho;document.body.appendChild(temp);temp.select();document.execCommand('copy');document.body.removeChild(temp);var popup = document.getElementById('popup');popup.style.display = 'block';setTimeout(function(){popup.style.display = 'none';}, 2000);}</script></head><body>"
     conteudo_html += '<div id="popup">O caminho foi copiado para a área de transferência.</div>'
     for resultado in resultados_encontrados:
         conteudo_html += f'<p>{criar_link(resultado)}</p>'
