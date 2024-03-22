@@ -1,8 +1,10 @@
+# Atual: Popup exibe "Endereço do arquivo foi copiado".
+# Anterior: Popup fechado automaticamente após 2 segundos.
+
 import os
 import sys
-import webbrowser
-import subprocess
-import pyperclip  # Módulo para manipulação da área de transferência
+import tkinter as tk
+from tkinter import messagebox
 
 # Verifique se o termo de pesquisa e o caminho foram passados como argumentos
 if len(sys.argv) != 3:
@@ -23,35 +25,41 @@ def encontrar_termo(caminho_da_pasta, termo_pesquisado):
         resultados.extend(os.path.join(raiz, f) for f in arquivos if termo_pesquisado in f)
     return resultados
 
-# Função para criar links HTML
-def criar_link(caminho):
-    return f'<a href="#" onclick="copiar_caminho(\'{os.path.dirname(caminho)}\'); return false;" style="color: #1ca3ec;">{caminho}</a>'
-
-# Função para copiar o caminho até a pasta do arquivo e mostrar um popup indicando que foi copiado
+# Função para copiar o caminho até a pasta do arquivo
 def copiar_caminho(caminho):
-    pyperclip.copy(caminho)
-    print("Caminho copiado para a área de transferência.")
-    subprocess.Popen(["powershell", "-Command", "Add-Type -AssemblyName PresentationFramework; $popup = [System.Windows.MessageBox]::Show('O caminho foi copiado para a área de transferência.', 'Copiado', 'OK', 'Information'); $timer = New-Object System.Timers.Timer; $timer.Interval = 2000; $timer.Enabled = $true; $timer.AutoReset = $false; $timer.add_Elapsed({$popup.Close(); $timer.Dispose()})"])
+    mensagem = f"Endereço do arquivo {caminho} foi copiado para a área de transferência."
+    print(mensagem)
+    messagebox.showinfo("Copiado", mensagem)
+    root.after(2000, root.destroy)  # Fecha a janela após 2 segundos
+
+# Função para criar a interface gráfica
+def criar_interface_grafica():
+    root = tk.Tk()
+    root.title("Resultados da busca")
+    root.configure(background="#1f1f1f")
+    root.state('zoomed')  # Abrir maximizado
+
+    frame = tk.Frame(root, bg="#1f1f1f")
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    # Adiciona resultados na lista
+    for resultado in resultados_encontrados:
+        endereco_label = tk.Label(frame, text=resultado, bg="#1f1f1f", fg="#ffffff")
+        endereco_label.grid(row=resultados_encontrados.index(resultado), column=0, sticky="w", padx=5, pady=2)
+
+        button = tk.Button(frame, text="Copiar", command=lambda r=resultado: copiar_caminho(r), bg="#4B0082", fg="#ffffff")
+        button.grid(row=resultados_encontrados.index(resultado), column=1, sticky="e", padx=5, pady=2)
+
+    root.mainloop()
 
 # Execute a busca
 resultados_encontrados = encontrar_termo(caminho_da_pasta, termo_pesquisado)
 
 if resultados_encontrados:
-    print(f"\n\n-------------------------------------\nResultados encontrados para '{termo_pesquisado}':\n-------------------------------------")
+    print(f"\n\n-------------------------------------\nOs resultados encontrados para '{termo_pesquisado}': serão exibidos na interface gráfica maximizada com popup exibindo o endereço do arquivo copiado\n-------------------------------------")
     
-    # Criar conteúdo HTML com os links
-    conteudo_html = "<html><head><title>Resultados da busca</title><style>body {background-color: #1f1f1f;color: #ffffff;font-family: Arial, sans-serif;}#popup {display: none;position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);background-color: #333;color: #ffffff;padding: 20px;border-radius: 5px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);}a {color: #1ca3ec;}</style><script>function copiar_caminho(caminho) {var temp = document.createElement('input');temp.value = caminho;document.body.appendChild(temp);temp.select();document.execCommand('copy');document.body.removeChild(temp);var popup = document.getElementById('popup');popup.style.display = 'block';setTimeout(function(){popup.style.display = 'none';}, 2000);}</script></head><body>"
-    conteudo_html += '<div id="popup">O caminho foi copiado para a área de transferência.</div>'
-    for resultado in resultados_encontrados:
-        conteudo_html += f'<p>{criar_link(resultado)}</p>'
-    conteudo_html += "</body></html>"
-
-    # Salvar o conteúdo HTML em um arquivo
-    with open("resultados_busca.html", "w", encoding="utf-8") as html_file:
-        html_file.write(conteudo_html)
-
-    # Abrir o arquivo HTML no navegador padrão
-    webbrowser.open_new_tab("resultados_busca.html")
+    # Criar interface gráfica
+    criar_interface_grafica()
 
 else:
     print(f"\nNenhum resultado encontrado para '{termo_pesquisado}'.\n")
